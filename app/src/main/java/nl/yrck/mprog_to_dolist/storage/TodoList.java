@@ -9,6 +9,10 @@ public class TodoList {
     private String created_at;
     private List<TodoItem> todoItems;
 
+    public TodoList(String name) {
+        this.name = name;
+    }
+
     public TodoList(long id, String name, String created_at) {
         this.id = id;
         this.name = name;

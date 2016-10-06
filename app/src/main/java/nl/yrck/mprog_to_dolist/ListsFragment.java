@@ -1,9 +1,8 @@
 package nl.yrck.mprog_to_dolist;
 
-import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,10 +13,13 @@ import android.view.ViewGroup;
 import java.util.List;
 
 import nl.yrck.mprog_to_dolist.adapters.TodoListRecyclerAdapter;
+import nl.yrck.mprog_to_dolist.dialogs.AddListDialog;
 import nl.yrck.mprog_to_dolist.storage.TodoList;
 import nl.yrck.mprog_to_dolist.storage.TodoManager;
 
 public class ListsFragment extends Fragment {
+
+    public static String TAG = "LIST_FRAGMENT";
 
     RecyclerView recyclerView;
     TodoListRecyclerAdapter recyclerAdapter;
@@ -29,7 +31,7 @@ public class ListsFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static ListsFragment newInstance(long listId) {
+    public static ListsFragment newInstance() {
         ListsFragment fragment = new ListsFragment();
         return fragment;
     }
@@ -37,13 +39,17 @@ public class ListsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        todoLists = Util.convertLongParseArrayToList(TodoManager.getInstance().getTodoLists());
+        TodoManager.getInstance().readTodos(getActivity());
+        todoLists = TodoManager.getInstance().getTodoLists();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_lists, container, false);
+
+        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab);
+        fab.setOnClickListener(v -> addListDialog());
 
         recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
@@ -57,7 +63,6 @@ public class ListsFragment extends Fragment {
             public void onItemClick(int position, View v) {
                 startTodoActivity(v);
             }
-
             @Override
             public void onItemLongClick(int position, View view) {
 
@@ -68,8 +73,20 @@ public class ListsFragment extends Fragment {
         return view;
     }
 
+    private void addListDialog() {
+        AddListDialog addListDialog = new AddListDialog(this::addNewList);
+        addListDialog.show(getActivity());
+    }
+
+    private void addNewList(String name) {
+        TodoManager.getInstance().getTodoLists().add(new TodoList(name));
+        recyclerAdapter.notifyDataSetChanged();
+    }
+
     private void startTodoActivity(View v) {
         Intent intent = new Intent(getActivity(), TodoActivity.class);
-        startActivity(intent);
+        Bundle bundle = new Bundle();
+        bundle.putLong(TodoFragment.BUNDLE_LISTID, (Long) v.getTag());
+        startActivity(intent, bundle);
     }
 }

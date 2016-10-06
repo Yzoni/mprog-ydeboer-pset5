@@ -14,8 +14,13 @@ import java.util.Locale;
 
 public class DBHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 1;
-    private static final String DATABASE_NAME = "TODO";
+    private static final int DATABASE_VERSION = 2;
+    private static final String DATABASE_NAME = "TODOV2";
+
+    private static final String TABLE_TODOLIST = "table_todolist";
+    private static final String COLUMN_TODOLIST_ID = "id";
+    private static final String COLUMN_TODOLIST_NAME = "name";
+    private static final String COLUMN_TODOLIST_CREATEDAT = "created_at";
 
     private static final String TABLE_TODOITEM = "table_todoitem";
     private static final String COLUMN_TODOITEM_ID = "id";
@@ -23,16 +28,6 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String COLUMN_TODOITEM_NAME = "name";
     private static final String COLUMN_TODOITEM_STATUS = "status";
     private static final String COLUMN_TODOITEM_CREATEDAT = "created_at";
-
-    private static final String TABLE_TODOLIST = "table_todolist";
-    private static final String COLUMN_TODOLIST_ID = "id";
-    private static final String COLUMN_TODOLIST_NAME = "name";
-    private static final String COLUMN_TODOLIST_CREATEDAT = "created_at";
-
-//    private static final String TABLE_TODOLIST_TODOITEM = "table_todolist_todoitem";
-//    private static final String COLUMN_TODOLIST_TODOITEM_ID = "id";
-//    private static final String COLUMN_TODOLIST_TODOITEM_TODOLISTID = "todolist_id";
-//    private static final String COLUMN_TODOLIST_TODOITEM_TODOITEMID = "todoitem_id";
 
     private static final String CREATE_TABLE_TODOLIST = "CREATE TABLE "
             + TABLE_TODOLIST + "(" + COLUMN_TODOLIST_ID + " INTEGER PRIMARY KEY,"
@@ -43,11 +38,6 @@ public class DBHelper extends SQLiteOpenHelper {
             + COLUMN_TODOITEM_NAME + " TEXT," + COLUMN_TODOITEM_STATUS + " INTEGER,"
             + COLUMN_TODOITEM_CREATEDAT + " DATETIME" + ")";
 
-//    private static final String CREATE_TABLE_TODOLIST_TODOITEM = "CREATE TABLE "
-//            + TABLE_TODOLIST_TODOITEM + "(" + COLUMN_TODOLIST_TODOITEM_ID + " INTEGER PRIMARY KEY,"
-//            + COLUMN_TODOLIST_TODOITEM_TODOITEMID + " INTEGER,"
-//            + COLUMN_TODOLIST_TODOITEM_TODOLISTID + " INTEGER" + ")";
-
     DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -56,14 +46,18 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL(CREATE_TABLE_TODOLIST);
         sqLiteDatabase.execSQL(CREATE_TABLE_TODOITEM);
-//        sqLiteDatabase.execSQL(CREATE_TABLE_TODOLIST_TODOITEM);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_TODOLIST);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_TODOITEM);
-//        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_TODOLIST_TODOITEM);
+    }
+
+    public void clear() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM " + TABLE_TODOLIST);
+        db.execSQL("DELETE FROM " + TABLE_TODOITEM);
     }
 
     private String getDateTime() {
@@ -123,7 +117,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(COLUMN_TODOLIST_NAME, todoList.getName());
         values.put(COLUMN_TODOLIST_CREATEDAT, getDateTime());
 
-        long id = db.insert(TABLE_TODOITEM, null, values);
+        long id = db.insert(TABLE_TODOLIST, null, values);
         this.getWritableDatabase().close();
 
         return id;

@@ -12,7 +12,7 @@ import nl.yrck.mprog_to_dolist.R;
 public class SimpleDividerItemDecoration extends RecyclerView.ItemDecoration {
     private Drawable mDivider;
 
-    SimpleDividerItemDecoration(Context context) {
+    public SimpleDividerItemDecoration(Context context) {
         mDivider = ContextCompat.getDrawable(context, R.drawable.line_divider);
     }
 

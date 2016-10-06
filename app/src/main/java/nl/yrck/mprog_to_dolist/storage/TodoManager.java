@@ -2,18 +2,18 @@ package nl.yrck.mprog_to_dolist.storage;
 
 
 import android.content.Context;
-import android.support.v4.util.LongSparseArray;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TodoManager {
 
     private static TodoManager todoManager;
 
-    private LongSparseArray<TodoList> todoLists;
+    private List<TodoList> todoLists;
 
     private TodoManager() {
-        todoLists = new LongSparseArray<>();
+        todoLists = new ArrayList<>();
     }
 
     public static TodoManager getInstance() {
@@ -25,24 +25,27 @@ public class TodoManager {
 
     public void readTodos(Context context) {
         DBHelper dbHelper = new DBHelper(context);
-        for (TodoList todoList : dbHelper.getAllTodoLists()) {
-            todoLists.put(todoList.getId(), todoList);
-        }
+        todoLists = dbHelper.getAllTodoLists();
     }
 
     public void writeTodos(Context context) {
         DBHelper dbHelper = new DBHelper(context);
-        for (TodoList todoList : dbHelper.getAllTodoLists()) {
+        dbHelper.clear();
+        for (TodoList todoList : todoLists) {
             dbHelper.createTodoList(todoList);
         }
     }
 
-    public LongSparseArray<TodoList> getTodoLists() {
+    public List<TodoList> getTodoLists() {
         return todoLists;
     }
 
-    public List<TodoItem> getTodoItems(long listId) {
-        return todoLists.get(listId).getTodoItems();
+    public TodoList getTodoList(long list_id) {
+        for (TodoList todoList : todoLists) {
+            if (todoList.getId() == list_id) {
+                return todoList;
+            }
+        }
+        return null;
     }
-
 }

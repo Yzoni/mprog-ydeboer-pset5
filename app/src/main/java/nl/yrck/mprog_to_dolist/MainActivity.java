@@ -1,23 +1,15 @@
 package nl.yrck.mprog_to_dolist;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
-import android.widget.EditText;
 
-import java.util.List;
-
-import nl.yrck.mprog_to_dolist.storage.DBHelper;
-import nl.yrck.mprog_to_dolist.storage.TodoItem;
 import nl.yrck.mprog_to_dolist.storage.TodoManager;
+import nl.yrck.mprog_to_dolist.util.Util;
 
 public class MainActivity extends AppCompatActivity {
     Toolbar toolbar;
@@ -30,12 +22,21 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         setSupportActionBar(toolbar);
+
+        initFragment();
+    }
+
+    private void initFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        ListsFragment recyclerMovieFragment = ListsFragment.newInstance();
+        fragmentTransaction.add(R.id.fragment, recyclerMovieFragment, ListsFragment.TAG);
+        fragmentTransaction.commit();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
         TodoManager.getInstance().writeTodos(getApplicationContext());
     }
 

@@ -1,10 +1,7 @@
 package nl.yrck.mprog_to_dolist.adapters;
 
 import android.content.Context;
-import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -61,7 +58,7 @@ public class TodoItemRecyclerAdapter extends RecyclerView.Adapter<TodoItemRecycl
         return todoItems.size();
     }
 
-    interface ClickListener {
+    public interface ClickListener {
         void onItemClick(int position, View v);
 
         void onItemLongClick(int position, View view);
