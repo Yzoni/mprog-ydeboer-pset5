@@ -10,10 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.List;
-
 import nl.yrck.mprog_to_dolist.adapters.TodoListRecyclerAdapter;
 import nl.yrck.mprog_to_dolist.dialogs.AddListDialog;
+import nl.yrck.mprog_to_dolist.dialogs.RemoveListDialog;
 import nl.yrck.mprog_to_dolist.storage.TodoList;
 import nl.yrck.mprog_to_dolist.storage.TodoManager;
 
@@ -25,22 +24,18 @@ public class ListsFragment extends Fragment {
     TodoListRecyclerAdapter recyclerAdapter;
     RecyclerView.LayoutManager layoutManager;
 
-    List<TodoList> todoLists;
-
     public ListsFragment() {
         // Required empty public constructor
     }
 
     public static ListsFragment newInstance() {
-        ListsFragment fragment = new ListsFragment();
-        return fragment;
+        return new ListsFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         TodoManager.getInstance().readTodos(getActivity());
-        todoLists = TodoManager.getInstance().getTodoLists();
     }
 
     @Override
@@ -57,15 +52,19 @@ public class ListsFragment extends Fragment {
         layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
 
-        recyclerAdapter = new TodoListRecyclerAdapter(todoLists, getActivity());
+        recyclerAdapter = new TodoListRecyclerAdapter(
+                TodoManager.getInstance().getTodoLists(),
+                getActivity()
+        );
         recyclerAdapter.setOnItemClickListener(new TodoListRecyclerAdapter.ClickListener() {
             @Override
             public void onItemClick(int position, View v) {
                 startTodoActivity(v);
             }
+
             @Override
             public void onItemLongClick(int position, View view) {
-
+                removeListDialog((Long) view.getTag());
             }
         });
 
@@ -74,12 +73,22 @@ public class ListsFragment extends Fragment {
     }
 
     private void addListDialog() {
-        AddListDialog addListDialog = new AddListDialog(this::addNewList);
+        AddListDialog addListDialog = new AddListDialog(this::onAddNewList);
         addListDialog.show(getActivity());
     }
 
-    private void addNewList(String name) {
-        TodoManager.getInstance().getTodoLists().add(new TodoList(name));
+    private void onAddNewList(String name) {
+        TodoManager.getInstance().writeTodoList(new TodoList(name), getActivity());
+        recyclerAdapter.notifyDataSetChanged();
+    }
+
+    private void removeListDialog(long listId) {
+        RemoveListDialog removeListDialog = new RemoveListDialog(this::onRemoveList);
+        removeListDialog.show(listId, getActivity());
+    }
+
+    private void onRemoveList(long listId) {
+        TodoManager.getInstance().removeTodoList(listId, getActivity());
         recyclerAdapter.notifyDataSetChanged();
     }
 
@@ -87,6 +96,7 @@ public class ListsFragment extends Fragment {
         Intent intent = new Intent(getActivity(), TodoActivity.class);
         Bundle bundle = new Bundle();
         bundle.putLong(TodoFragment.BUNDLE_LISTID, (Long) v.getTag());
-        startActivity(intent, bundle);
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 }

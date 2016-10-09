@@ -8,10 +8,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import nl.yrck.mprog_to_dolist.storage.TodoManager;
 import nl.yrck.mprog_to_dolist.util.Util;
 
 public class MainActivity extends AppCompatActivity {
+
     Toolbar toolbar;
 
     @Override
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        TodoManager.getInstance().writeTodos(getApplicationContext());
+//        TodoManager.getInstance().writeTodos(getApplicationContext());
     }
 
     @Override

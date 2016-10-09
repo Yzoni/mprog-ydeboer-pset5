@@ -1,5 +1,6 @@
 package nl.yrck.mprog_to_dolist.storage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TodoList {
@@ -17,6 +18,7 @@ public class TodoList {
         this.id = id;
         this.name = name;
         this.created_at = created_at;
+        this.todoItems = new ArrayList<>();
     }
 
     public void addTodoItem(TodoItem todoItem) {
@@ -40,6 +42,11 @@ public class TodoList {
     }
 
     public void setTodoItems(List<TodoItem> todoItems) {
-        this.todoItems = todoItems;
+        this.todoItems.addAll(todoItems);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof TodoList && this.id == ((TodoList) obj).getId();
     }
 }

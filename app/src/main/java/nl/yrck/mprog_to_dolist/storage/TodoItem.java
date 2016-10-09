@@ -28,6 +28,10 @@ public class TodoItem {
         return id;
     }
 
+    public long getListId() {
+        return listId;
+    }
+
     public String getName() {
         return name;
     }
@@ -38,5 +42,10 @@ public class TodoItem {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof TodoItem && this.id == ((TodoItem) obj).getId();
     }
 }

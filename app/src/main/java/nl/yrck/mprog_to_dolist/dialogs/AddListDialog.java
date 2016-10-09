@@ -27,7 +27,7 @@ public class AddListDialog {
     }
 
     public interface ArgumentListener {
-        public void onClick(String argument);
+        void onClick(String argument);
     }
 }
 

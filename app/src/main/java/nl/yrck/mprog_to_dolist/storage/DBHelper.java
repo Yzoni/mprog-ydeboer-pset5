@@ -14,7 +14,7 @@ import java.util.Locale;
 
 public class DBHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     private static final String DATABASE_NAME = "TODOV2";
 
     private static final String TABLE_TODOLIST = "table_todolist";
@@ -35,8 +35,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private static final String CREATE_TABLE_TODOITEM = "CREATE TABLE "
             + TABLE_TODOITEM + "(" + COLUMN_TODOITEM_ID + " INTEGER PRIMARY KEY,"
-            + COLUMN_TODOITEM_NAME + " TEXT," + COLUMN_TODOITEM_STATUS + " INTEGER,"
-            + COLUMN_TODOITEM_CREATEDAT + " DATETIME" + ")";
+            + COLUMN_TODOITEM_LISTID + " INTEGER," + COLUMN_TODOITEM_NAME + " TEXT,"
+            + COLUMN_TODOITEM_STATUS + " INTEGER," + COLUMN_TODOITEM_CREATEDAT + " DATETIME" + ")";
 
     DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -58,6 +58,7 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + TABLE_TODOLIST);
         db.execSQL("DELETE FROM " + TABLE_TODOITEM);
+        db.close();
     }
 
     private String getDateTime() {
@@ -84,7 +85,7 @@ public class DBHelper extends SQLiteOpenHelper {
             } while (c.moveToNext());
         }
         c.close();
-
+        db.close();
         return todoLists;
     }
 
@@ -103,10 +104,11 @@ public class DBHelper extends SQLiteOpenHelper {
                         c.getString(c.getColumnIndex(COLUMN_TODOLIST_CREATEDAT))
                 );
                 todoList.setTodoItems(getAllTodosFromTodoList(todoList.getId()));
+                todoLists.add(todoList);
             } while (c.moveToNext());
         }
         c.close();
-
+        db.close();
         return todoLists;
     }
 
@@ -118,7 +120,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(COLUMN_TODOLIST_CREATEDAT, getDateTime());
 
         long id = db.insert(TABLE_TODOLIST, null, values);
-        this.getWritableDatabase().close();
+        db.close();
 
         return id;
     }
@@ -128,11 +130,12 @@ public class DBHelper extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(COLUMN_TODOITEM_NAME, todoItem.getName());
+        values.put(COLUMN_TODOITEM_LISTID, todoItem.getListId());
         values.put(COLUMN_TODOITEM_STATUS, todoItem.getStatus());
         values.put(COLUMN_TODOITEM_CREATEDAT, getDateTime());
 
         long id = db.insert(TABLE_TODOITEM, null, values);
-        this.getWritableDatabase().close();
+        db.close();
 
         return id;
     }
@@ -145,18 +148,45 @@ public class DBHelper extends SQLiteOpenHelper {
 
         Cursor c = db.rawQuery(query, null);
 
-        if (c != null)
+        if (c != null) {
             c.moveToFirst();
 
-        TodoItem todoItem = new TodoItem(
-                c.getInt(c.getColumnIndex(COLUMN_TODOITEM_ID)),
-                c.getInt(c.getColumnIndex(COLUMN_TODOITEM_LISTID)),
-                c.getString(c.getColumnIndex(COLUMN_TODOITEM_NAME)),
-                c.getInt(c.getColumnIndex(COLUMN_TODOITEM_STATUS)),
-                c.getString(c.getColumnIndex(COLUMN_TODOITEM_CREATEDAT))
-        );
-        c.close();
-        return todoItem;
+            TodoItem todoItem = new TodoItem(
+                    c.getInt(c.getColumnIndex(COLUMN_TODOITEM_ID)),
+                    c.getInt(c.getColumnIndex(COLUMN_TODOITEM_LISTID)),
+                    c.getString(c.getColumnIndex(COLUMN_TODOITEM_NAME)),
+                    c.getInt(c.getColumnIndex(COLUMN_TODOITEM_STATUS)),
+                    c.getString(c.getColumnIndex(COLUMN_TODOITEM_CREATEDAT))
+            );
+            c.close();
+
+            db.close();
+            return todoItem;
+        }
+        return null;
+    }
+
+    public TodoList getTodoList(long todoListId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT * FROM " + TABLE_TODOLIST + " WHERE "
+                + COLUMN_TODOLIST_ID + " = " + todoListId;
+
+        Cursor c = db.rawQuery(query, null);
+
+        if (c != null) {
+            c.moveToFirst();
+
+            TodoList todoList = new TodoList(
+                    c.getInt(c.getColumnIndex(COLUMN_TODOLIST_ID)),
+                    c.getString(c.getColumnIndex(COLUMN_TODOLIST_NAME)),
+                    c.getString(c.getColumnIndex(COLUMN_TODOLIST_CREATEDAT))
+            );
+            c.close();
+            db.close();
+            return todoList;
+        }
+        return null;
     }
 
     public List<TodoItem> getAllTodosFromTodoList(long todoListId) {
@@ -180,7 +210,31 @@ public class DBHelper extends SQLiteOpenHelper {
             } while (c.moveToNext());
         }
         c.close();
+        db.close();
+        return todoItems;
+    }
 
+    public List<TodoItem> getAllTodos() {
+        List<TodoItem> todoItems = new ArrayList<>();
+        String query = "SELECT  * FROM " + TABLE_TODOITEM;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(query, null);
+
+        if (c.moveToFirst()) {
+            do {
+                todoItems.add(new TodoItem(
+                        c.getInt(c.getColumnIndex(COLUMN_TODOITEM_ID)),
+                        c.getInt(c.getColumnIndex(COLUMN_TODOITEM_LISTID)),
+                        c.getString(c.getColumnIndex(COLUMN_TODOITEM_NAME)),
+                        c.getInt(c.getColumnIndex(COLUMN_TODOITEM_STATUS)),
+                        c.getString(c.getColumnIndex(COLUMN_TODOITEM_CREATEDAT))
+                ));
+
+            } while (c.moveToNext());
+        }
+        c.close();
+        db.close();
         return todoItems;
     }
 
@@ -195,9 +249,17 @@ public class DBHelper extends SQLiteOpenHelper {
                 new String[]{String.valueOf(todoItem.getId())});
     }
 
-    public void deleteTodo(long todoId) {
+    public void deleteTodoItem(long todoId) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_TODOITEM, COLUMN_TODOITEM_ID + " = ?",
                 new String[]{String.valueOf(todoId)});
+        db.close();
+    }
+
+    public void deleteTodoList(long todoListId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_TODOLIST, COLUMN_TODOLIST_ID + " = ?",
+                new String[]{String.valueOf(todoListId)});
+        db.close();
     }
 }

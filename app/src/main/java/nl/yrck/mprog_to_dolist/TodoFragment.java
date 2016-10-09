@@ -10,11 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-
-import java.util.List;
+import android.widget.TextView;
 
 import nl.yrck.mprog_to_dolist.adapters.TodoItemRecyclerAdapter;
 import nl.yrck.mprog_to_dolist.storage.TodoItem;
+import nl.yrck.mprog_to_dolist.storage.TodoList;
 import nl.yrck.mprog_to_dolist.storage.TodoManager;
 import nl.yrck.mprog_to_dolist.util.SimpleDividerItemDecoration;
 
@@ -28,7 +28,7 @@ public class TodoFragment extends Fragment {
     RecyclerView recyclerView;
     TodoItemRecyclerAdapter todoItemRecyclerAdapter;
     EditText editTextAdd;
-    List<TodoItem> todoItems;
+    TodoList todoList;
     private long listId;
 
     public TodoFragment() {
@@ -48,15 +48,8 @@ public class TodoFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             listId = getArguments().getLong(BUNDLE_LISTID);
-
-            todoItems = TodoManager.getInstance().getTodoList(listId).getTodoItems();
+            todoList = TodoManager.getInstance().getTodoList(listId);
         }
-    }
-
-    private void updateRecycler() {
-        todoItems.clear();
-        todoItems.addAll(TodoManager.getInstance().getTodoList(listId).getTodoItems());
-        todoItemRecyclerAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -70,30 +63,26 @@ public class TodoFragment extends Fragment {
 
         buttonAdd.setOnClickListener(v -> addTodo());
 
-        todoItems = TodoManager.getInstance().getTodoList(listId).getTodoItems();
-
         linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
         recyclerView.addItemDecoration(new SimpleDividerItemDecoration(getActivity()));
-        todoItemRecyclerAdapter = new TodoItemRecyclerAdapter(todoItems, getActivity());
+        todoItemRecyclerAdapter = new TodoItemRecyclerAdapter(todoList.getTodoItems(), getActivity());
         todoItemRecyclerAdapter.setOnItemClickListener(new TodoItemRecyclerAdapter.ClickListener() {
             @Override
             public void onItemClick(int position, View view) {
-                toggleTodoStatus(position);
-                updateRecycler();
+                toggleTodoStatus((Long) view.getTag());
             }
 
             @Override
             public void onItemLongClick(int position, View view) {
-                TodoItem todoItem = todoItems.get(position);
-
+                TextView textView = (TextView) view.findViewById(R.id.todo_name);
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.setTitle("Delete")
-                        .setMessage("Delete todoItem " + todoItem.getName() + "?")
+                        .setMessage("Delete item " + textView.getText().toString() + "?")
                         .setCancelable(true)
                         .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                        .setPositiveButton("Delete", (dialog, which) -> deleteTodo(position));
+                        .setPositiveButton("Delete", (dialog, which) -> deleteTodo((Long) view.getTag()));
                 AlertDialog dialog = builder.create();
                 dialog.show();
             }
@@ -105,19 +94,19 @@ public class TodoFragment extends Fragment {
     }
 
     private void addTodo() {
-        todoItems.add(new TodoItem(listId, editTextAdd.getText().toString()));
+        TodoItem todoItem = new TodoItem(listId, editTextAdd.getText().toString());
+        editTextAdd.setText("");
+        TodoManager.getInstance().writeTodoItem(todoItem, todoList, getActivity());
+        todoItemRecyclerAdapter.notifyDataSetChanged();
     }
 
-    private void deleteTodo(int position) {
-        todoItems.remove(position);
+    private void deleteTodo(long todoId) {
+        TodoManager.getInstance().removeTodoItem(todoId, todoList, getActivity());
+        todoItemRecyclerAdapter.notifyDataSetChanged();
     }
 
-    private void toggleTodoStatus(int position) {
-        TodoItem todo = todoItems.get(position);
-        if (todo.getStatus() == TodoItem.STATUS_CHECKED) {
-            todo.setStatus(TodoItem.STATUS_UNCHECKED);
-        } else {
-            todo.setStatus(TodoItem.STATUS_CHECKED);
-        }
+    private void toggleTodoStatus(long todoId) {
+        TodoManager.getInstance().toggleTodoItem(todoId, todoList, getActivity());
+        todoItemRecyclerAdapter.notifyDataSetChanged();
     }
 }

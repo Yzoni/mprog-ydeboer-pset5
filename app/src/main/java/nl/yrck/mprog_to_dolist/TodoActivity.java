@@ -17,13 +17,16 @@ public class TodoActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        initFragment();
+        Bundle bundle = getIntent().getExtras();
+        long listId = bundle.getLong(TodoFragment.BUNDLE_LISTID);
+
+        initFragment(listId);
     }
 
-    private void initFragment() {
+    private void initFragment(long listId) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        TodoFragment todoFragment = TodoFragment.newInstance(1);
+        TodoFragment todoFragment = TodoFragment.newInstance(listId);
         fragmentTransaction.add(R.id.fragment, todoFragment, TodoFragment.TAG);
         fragmentTransaction.commit();
     }
