@@ -28,14 +28,6 @@ public class TodoManager {
         todoLists = dbHelper.getAllTodoListsPopulated();
     }
 
-    public void writeTodos(Context context) {
-        DBHelper dbHelper = new DBHelper(context);
-        dbHelper.clear();
-        for (TodoList todoList : todoLists) {
-            dbHelper.createTodoList(todoList);
-        }
-    }
-
     public List<TodoList> getTodoLists() {
         return todoLists;
     }

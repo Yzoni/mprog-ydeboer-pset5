@@ -22,6 +22,7 @@ import nl.yrck.mprog_to_dolist.util.SimpleDividerItemDecoration;
 public class TodoFragment extends Fragment {
 
     public static final String BUNDLE_LISTID = "LIST_ID";
+    public static final String BUNDLE_LISTNAME = "LIST_NAME";
     public static String TAG = "TODO_FRAGMENT";
     Button buttonAdd;
     LinearLayoutManager linearLayoutManager;

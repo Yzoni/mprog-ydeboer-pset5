@@ -16,11 +16,9 @@ public class TodoActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
         Bundle bundle = getIntent().getExtras();
-        long listId = bundle.getLong(TodoFragment.BUNDLE_LISTID);
-
-        initFragment(listId);
+        getSupportActionBar().setTitle(bundle.getString(TodoFragment.BUNDLE_LISTNAME));
+        initFragment(bundle.getLong(TodoFragment.BUNDLE_LISTID));
     }
 
     private void initFragment(long listId) {

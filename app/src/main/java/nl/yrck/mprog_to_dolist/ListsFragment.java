@@ -9,12 +9,14 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import nl.yrck.mprog_to_dolist.adapters.TodoListRecyclerAdapter;
 import nl.yrck.mprog_to_dolist.dialogs.AddListDialog;
 import nl.yrck.mprog_to_dolist.dialogs.RemoveListDialog;
 import nl.yrck.mprog_to_dolist.storage.TodoList;
 import nl.yrck.mprog_to_dolist.storage.TodoManager;
+import nl.yrck.mprog_to_dolist.util.SimpleDividerItemDecoration;
 
 public class ListsFragment extends Fragment {
 
@@ -51,6 +53,7 @@ public class ListsFragment extends Fragment {
 
         layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.addItemDecoration(new SimpleDividerItemDecoration(getActivity()));
 
         recyclerAdapter = new TodoListRecyclerAdapter(
                 TodoManager.getInstance().getTodoLists(),
@@ -95,6 +98,8 @@ public class ListsFragment extends Fragment {
     private void startTodoActivity(View v) {
         Intent intent = new Intent(getActivity(), TodoActivity.class);
         Bundle bundle = new Bundle();
+        TextView textView = (TextView) v.findViewById(R.id.todo_name);
+        bundle.putString(TodoFragment.BUNDLE_LISTNAME, textView.getText().toString());
         bundle.putLong(TodoFragment.BUNDLE_LISTID, (Long) v.getTag());
         intent.putExtras(bundle);
         startActivity(intent);

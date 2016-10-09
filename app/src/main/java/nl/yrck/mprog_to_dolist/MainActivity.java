@@ -24,6 +24,8 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         initFragment();
+
+
     }
 
     private void initFragment() {
@@ -32,12 +34,6 @@ public class MainActivity extends AppCompatActivity {
         ListsFragment recyclerMovieFragment = ListsFragment.newInstance();
         fragmentTransaction.add(R.id.fragment, recyclerMovieFragment, ListsFragment.TAG);
         fragmentTransaction.commit();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-//        TodoManager.getInstance().writeTodos(getApplicationContext());
     }
 
     @Override
